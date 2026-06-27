@@ -6,7 +6,7 @@ public class SceneColliderInspector : MonoBehaviour
 {
     void Start()
     {
-        string logPath = Path.Combine(Application.dataPath, "collider_inspection_log.txt");
+        string logPath = Path.Combine(Application.persistentDataPath, "collider_inspection_log.txt");
         StringBuilder sb = new StringBuilder();
         sb.AppendLine("=== COLLIDER INSPECTION LOG ===");
 

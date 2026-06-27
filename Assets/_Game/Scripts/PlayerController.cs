@@ -30,6 +30,11 @@ public class PlayerController : MonoBehaviour
         _cc = GetComponent<CharacterController>();
     }
 
+    void Start()
+    {
+        _velocity = Vector3.zero;
+    }
+
     private bool IsGroundedCustom()
     {
         if (_cc.isGrounded) return true;
@@ -55,6 +60,9 @@ public class PlayerController : MonoBehaviour
     {
         bool grounded = IsGroundedCustom();
         if (grounded && _velocity.y < 0f) _velocity.y = -2f;
+
+        // Reset velocity if it drops too low instantly (protection for WebGL startup frames)
+        if (_velocity.y < -30f && Time.frameCount < 10) _velocity.y = -2f;
 
         // When movement is frozen, only apply gravity
         if (!_movementEnabled)

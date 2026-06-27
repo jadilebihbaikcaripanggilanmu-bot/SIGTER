@@ -64,6 +64,11 @@ public class GameManager : MonoBehaviour
         cc.slopeLimit = 55f;
         cc.skinWidth  = 0.08f;
 
+        // Temporarily disable CC to force exact position and avoid instant gravity drop before initialization
+        cc.enabled = false;
+        playerGO.transform.position = spawnPos;
+        cc.enabled = true;
+
         Player = playerGO.AddComponent<PlayerController>();
 
         // ── 6. Spawn Camera rig (Reverted to "Mode Kucing" 0.82f height) ───────

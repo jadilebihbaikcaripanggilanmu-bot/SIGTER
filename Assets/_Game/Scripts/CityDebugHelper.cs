@@ -8,7 +8,7 @@ public class CityDebugHelper : MonoBehaviour
 
     System.Collections.IEnumerator Start()
     {
-        logPath = Path.Combine(Application.dataPath, "city_debug_log.txt");
+        logPath = Path.Combine(Application.persistentDataPath, "city_debug_log.txt");
         File.WriteAllText(logPath, "=== CITY DEBUG LOG ===\n");
         Log("Game Started. Waiting 1.5 seconds for setup to complete...");
         
