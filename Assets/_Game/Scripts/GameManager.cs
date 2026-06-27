@@ -47,8 +47,8 @@ public class GameManager : MonoBehaviour
 
         // ── 4. Determine Spawn Position ────────────────────────────────────────
         Vector3 spawnXZ = DetermineSpawnPosition();
-        float roadSurfaceY = FindRoadSurfaceY(spawnXZ);
-        Vector3 spawnPos = new Vector3(spawnXZ.x, roadSurfaceY + 0.5f, spawnXZ.z);
+        // Force the player to spawn at the absolute street level Y (5.5f) to ensure they never get spawned below the road
+        Vector3 spawnPos = new Vector3(spawnXZ.x, 5.5f, spawnXZ.z);
 
         // ── 5. Spawn Player ───────────────────────────────────────────────────
         var playerGO = new GameObject("Player");

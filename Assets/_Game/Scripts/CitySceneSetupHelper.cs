@@ -160,10 +160,10 @@ public class CitySceneSetupHelper : MonoBehaviour
             }
         }
 
-        // ── Fallback ───────────────────────────────────────────────────────
-        PlayerSpawnPosition = new Vector3(0f, FallbackPlayerY, 0f);
+        // Force the player to spawn at the absolute street level Y (5.5f) to ensure they never get spawned below the road
+        PlayerSpawnPosition = new Vector3(0f, 5.5f, 0f);
         SpawnPositionReady  = true;
-        Debug.LogWarning("[CitySceneSetupHelper] Raycast found no low ground — using fallback spawn.");
+        Debug.Log($"[CitySceneSetupHelper] Spawn position forced at {PlayerSpawnPosition}");
     }
 
     private GameObject FindCityInActiveScene()
