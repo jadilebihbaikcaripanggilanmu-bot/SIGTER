@@ -37,33 +37,30 @@ public static class CitySceneSetup
         }
 
         // ── 2. Instantiate city if not already present ───────────────────────
-        bool cityExists = GameObject.Find("Imported_DemoCity_Environment") != null
-                       || GameObject.Find("demo_city_by_versatile_studio") != null;
-
-        GameObject cityInstance = null;
-        if (!cityExists)
+        GameObject cityInstance = FindCityInActiveScene();
+        if (cityInstance == null)
         {
             cityInstance = (GameObject)PrefabUtility.InstantiatePrefab(prefab);
             cityInstance.name = "Imported_DemoCity_Environment";
             cityInstance.transform.position = Vector3.zero;
-            Debug.Log("[CitySceneSetup] ✅ City prefab instantiated.");
+            cityInstance.SetActive(true);
+            Debug.Log("[CitySceneSetup] ✅ City prefab instantiated and activated.");
         }
         else
         {
-            cityInstance = GameObject.Find("Imported_DemoCity_Environment")
-                       ?? GameObject.Find("demo_city_by_versatile_studio");
-            Debug.Log("[CitySceneSetup] City already in scene — skipped instantiation.");
+            cityInstance.SetActive(true);
+            Debug.Log("[CitySceneSetup] City already in scene — activated it.");
         }
 
         // ── 3. Create UseImportedCityMarker ──────────────────────────────────
-        if (GameObject.Find("UseImportedCityMarker") == null)
+        if (FindGameObjectInActiveScene("UseImportedCityMarker") == null)
         {
             new GameObject("UseImportedCityMarker");
             Debug.Log("[CitySceneSetup] ✅ UseImportedCityMarker created.");
         }
 
         // ── 4. Ensure Bootstrap exists ───────────────────────────────────────
-        var bootstrapGO = GameObject.Find("Bootstrap");
+        var bootstrapGO = FindGameObjectInActiveScene("Bootstrap");
         if (bootstrapGO == null)
         {
             bootstrapGO = new GameObject("Bootstrap");
@@ -76,7 +73,7 @@ public static class CitySceneSetup
         }
 
         // ── 5. Ensure CitySceneSetupHelper exists with prefab assigned ───────
-        var helperGO = GameObject.Find("CitySceneSetupHelper");
+        var helperGO = FindGameObjectInActiveScene("CitySceneSetupHelper");
         if (helperGO == null)
         {
             helperGO = new GameObject("CitySceneSetupHelper");
@@ -103,7 +100,7 @@ public static class CitySceneSetup
         Debug.Log("[CitySceneSetup] ═══ Scene setup complete! Press Ctrl+S to save, then Play. ═══");
     }
 
-    [MenuItem("Surveyor/Open Demo City Night Scene", false, 20)]
+    [MenuItem("Surveyor/Setup & Open Demo City Night Scene", false, 20)]
     public static void OpenDemoCityScene()
     {
         const string scenePath =
@@ -112,12 +109,77 @@ public static class CitySceneSetup
         if (!System.IO.File.Exists(scenePath))
         {
             EditorUtility.DisplayDialog("Scene Not Found",
-                $"Could not find:\n{scenePath}", "OK");
+                $"Could not find scene at:\n{scenePath}", "OK");
             return;
         }
 
+        // Open the scene
         if (EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo())
-            EditorSceneManager.OpenScene(scenePath);
+        {
+            var scene = EditorSceneManager.OpenScene(scenePath);
+            
+            // 1. Ensure Bootstrap exists in the demo scene
+            var bootstrap = FindGameObjectInActiveScene("Bootstrap");
+            if (bootstrap == null)
+            {
+                bootstrap = new GameObject("Bootstrap");
+                bootstrap.AddComponent<Bootstrap>();
+                Debug.Log("[CitySceneSetup] ✅ Created Bootstrap in Demo City scene.");
+            }
+
+            // 2. Ensure PlayerSpawn marker exists at correct ROAD-LEVEL coordinates
+            //    Based on debug data: city_part_demo_main1 road at (136.21, 4.84, -104.56)
+            //    Spawn player 2m above road surface (Y=5 + 2 = 7)
+            var playerSpawn = FindGameObjectInActiveScene("PlayerSpawn");
+            if (playerSpawn == null)
+            {
+                playerSpawn = new GameObject("PlayerSpawn");
+            }
+            // Always update position — on the ROAD, not on a building
+            playerSpawn.transform.position = new Vector3(136f, 5.5f, -104f);
+            Debug.Log("[CitySceneSetup] ✅ PlayerSpawn set to road coordinates (136, 5.5, -104).");
+
+            // 3. Ensure UseImportedCityMarker exists
+            if (FindGameObjectInActiveScene("UseImportedCityMarker") == null)
+            {
+                new GameObject("UseImportedCityMarker");
+            }
+
+            // 4. Save the configured scene
+            EditorSceneManager.SaveScene(scene);
+            
+            EditorUtility.DisplayDialog("Demo City Configured! 🏙️",
+                "The official Demo City scene has been successfully opened and configured with WASD controls!\n\n" +
+                "Just press ▶ Play to walk around the city with skyscrapers!",
+                "Got it!");
+        }
+    }
+
+    private static GameObject FindCityInActiveScene()
+    {
+        var roots = UnityEngine.SceneManagement.SceneManager.GetActiveScene().GetRootGameObjects();
+        foreach (var r in roots)
+        {
+            var nameLower = r.name.ToLower();
+            if (nameLower.Contains("imported_democity") || 
+                nameLower.Contains("imported_demo city") || 
+                nameLower.Contains("demo_city_by_versatile") ||
+                nameLower.Contains("demo city by versatile"))
+            {
+                return r;
+            }
+        }
+        return null;
+    }
+
+    private static GameObject FindGameObjectInActiveScene(string name)
+    {
+        var roots = UnityEngine.SceneManagement.SceneManager.GetActiveScene().GetRootGameObjects();
+        foreach (var r in roots)
+        {
+            if (r.name == name) return r;
+        }
+        return null;
     }
 }
 #endif

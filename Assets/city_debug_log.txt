@@ -1,0 +1,64 @@
+=== CITY DEBUG LOG ===
+Game Started. Waiting 1.5 seconds for setup to complete...
+Current Active Scene: demo_city_night
+Total Root GameObjects: 14
+Root: 'ENVIRONMENT_OBJECTS' | ActiveSelf: True | Tag: Untagged
+Root: 'STATIC_MODELS' | ActiveSelf: True | Tag: Untagged
+Root: 'PlayerSpawn' | ActiveSelf: True | Tag: Untagged
+Root: 'UseImportedCityMarker' | ActiveSelf: True | Tag: Untagged
+Root: 'ImportedCityLoader' | ActiveSelf: True | Tag: Untagged
+Root: 'TotalStationPlacement' | ActiveSelf: True | Tag: Untagged
+Root: 'GameManager' | ActiveSelf: True | Tag: Untagged
+Root: 'CityDebugHelper' | ActiveSelf: True | Tag: Untagged
+Root: 'SceneColliderInspector' | ActiveSelf: True | Tag: Untagged
+Root: 'Sun' | ActiveSelf: True | Tag: Untagged
+Root: 'Player' | ActiveSelf: True | Tag: Player
+Root: 'UIManager' | ActiveSelf: True | Tag: Untagged
+Root: 'MinimapCamera' | ActiveSelf: True | Tag: Untagged
+Root: 'MinimapCanvas' | ActiveSelf: True | Tag: Untagged
+Found City Root: 'ENVIRONMENT_OBJECTS'
+City Transform - Position: (0.00, 0.00, 0.00), Rotation: (0.00, 0.00, 0.00), Scale: (1.00, 1.00, 1.00)
+City ActiveSelf: True, ActiveInHierarchy: True
+Found City Root: 'STATIC_MODELS'
+City Transform - Position: (0.00, 0.00, 0.00), Rotation: (0.00, 0.00, 0.00), Scale: (1.00, 1.00, 1.00)
+City ActiveSelf: True, ActiveInHierarchy: True
+PlayerSpawn Marker Position: (136.00, 5.50, -104.00)
+TotalStationPlacement Marker Position: (4.00, 0.00, 4.00)
+City Root 'ENVIRONMENT_OBJECTS' has 0 MeshFilters
+City Root 'STATIC_MODELS' has 2769 MeshFilters
+  Mesh 0: 'city_part_demo_main1' | Active: True | Shader: Universal Render Pipeline/Lit | WorldPos: (136.21, 4.84, -104.56)
+  Mesh 1: 'mid_house_3' | Active: True | Shader: Universal Render Pipeline/Lit | WorldPos: (64.38, 4.83, -101.15)
+  Mesh 2: 'small_house_1' | Active: True | Shader: Universal Render Pipeline/Lit | WorldPos: (73.17, 5.02, -117.40)
+  Mesh 3: 'small_house_2' | Active: True | Shader: Universal Render Pipeline/Lit | WorldPos: (72.33, 5.30, -127.69)
+  Mesh 4: 'small_house_3' | Active: True | Shader: Universal Render Pipeline/Lit | WorldPos: (70.84, 5.63, -139.23)
+  Mesh 5: 'mid_house_5' | Active: True | Shader: Universal Render Pipeline/Lit | WorldPos: (64.51, 5.74, -157.24)
+  Mesh 6: 'mid_house_1_2' | Active: True | Shader: Universal Render Pipeline/Lit | WorldPos: (26.75, 5.76, -160.82)
+  Mesh 7: 'mid_house_4_2' | Active: True | Shader: Universal Render Pipeline/Lit | WorldPos: (-1.42, 5.71, -160.43)
+  Mesh 8: 'office_building_3' | Active: True | Shader: Universal Render Pipeline/Lit | WorldPos: (20.75, 5.65, -127.15)
+  Mesh 9: 'basement_big' | Active: True | Shader: Universal Render Pipeline/Lit | WorldPos: (16.28, 0.47, -127.75)
+  Mesh 10: 'tree_2' | Active: True | Shader: Universal Render Pipeline/Lit | WorldPos: (54.41, 5.95, -149.21)
+  Mesh 11: 'tree_2 (1)' | Active: True | Shader: Universal Render Pipeline/Lit | WorldPos: (53.69, 5.95, -124.13)
+  Mesh 12: 'tree_2 (2)' | Active: True | Shader: Universal Render Pipeline/Lit | WorldPos: (-20.53, 5.95, -151.35)
+  Mesh 13: 'tree_2 (3)' | Active: True | Shader: Universal Render Pipeline/Lit | WorldPos: (-21.25, 5.95, -126.27)
+  Mesh 14: 'tree_3' | Active: True | Shader: Universal Render Pipeline/Lit | WorldPos: (28.01, 5.95, -99.89)
+  Mesh 15: 'tree_3 (1)' | Active: True | Shader: Universal Render Pipeline/Lit | WorldPos: (2.99, 5.95, -100.60)
+  Mesh 16: 'bench' | Active: True | Shader: Universal Render Pipeline/Lit | WorldPos: (50.52, 5.65, -124.31)
+  Mesh 17: 'bench (1)' | Active: True | Shader: Universal Render Pipeline/Lit | WorldPos: (51.23, 5.65, -149.36)
+  Mesh 18: 'bench (2)' | Active: True | Shader: Universal Render Pipeline/Lit | WorldPos: (-18.03, 5.65, -126.26)
+  Mesh 19: 'bench (3)' | Active: True | Shader: Universal Render Pipeline/Lit | WorldPos: (-17.31, 5.65, -151.31)
+  Mesh 20: 'bench (4)' | Active: True | Shader: Universal Render Pipeline/Lit | WorldPos: (3.05, 5.65, -103.81)
+  Mesh 21: 'bench (5)' | Active: True | Shader: Universal Render Pipeline/Lit | WorldPos: (28.16, 5.65, -103.09)
+  Mesh 22: 'building_lamp_blue (1)' | Active: True | Shader: Universal Render Pipeline/Lit | WorldPos: (21.13, 11.55, -140.30)
+  Mesh 23: 'building_lamp_blue (2)' | Active: True | Shader: Universal Render Pipeline/Lit | WorldPos: (20.38, 11.55, -114.01)
+  Mesh 24: 'building_lamp_blue (3)' | Active: True | Shader: Universal Render Pipeline/Lit | WorldPos: (41.93, 11.55, -126.55)
+  Mesh 25: 'building_lamp_blue (4)' | Active: True | Shader: Universal Render Pipeline/Lit | WorldPos: (-0.42, 11.55, -127.76)
+  Mesh 26: 'mid_house_2' | Active: True | Shader: Universal Render Pipeline/Lit | WorldPos: (37.69, 1.87, -2.28)
+  Mesh 27: 'mid_house_1' | Active: True | Shader: Universal Render Pipeline/Lit | WorldPos: (10.96, 1.38, 0.85)
+  Mesh 28: 'mid_house_4' | Active: True | Shader: Universal Render Pipeline/Lit | WorldPos: (-8.32, 1.14, 1.11)
+  Mesh 29: 'small_house_1' | Active: True | Shader: Universal Render Pipeline/Lit | WorldPos: (205.82, 5.56, -3.51)
+Total MeshFilters: 2769
+Active Mesh GameObjects: 2769/2769
+Enabled MeshRenderers: 2769/2769
+Player Found - Position: (135.56, 4.79, -79.88)
+  CharacterController Enabled: True, Center: (0.00, 0.90, 0.00), Height: 1.8
+Main Camera Found - Position: (135.56, 5.61, -79.88), Rotation: (16.39, 284.48, 0.00), Near: 0.12, Far: 1500

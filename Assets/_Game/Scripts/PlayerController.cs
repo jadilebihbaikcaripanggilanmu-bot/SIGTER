@@ -3,16 +3,17 @@ using UnityEngine.InputSystem;
 
 /// <summary>
 /// WASD movement, sprint (Left Shift), jump (Space).
-/// Uses New Input System via Keyboard.current – no UnityEngine.Input calls.
+/// Uses New Input System via Keyboard.current.
+/// Falls back to legacy Input if Keyboard.current is null.
 /// </summary>
 [RequireComponent(typeof(CharacterController))]
 public class PlayerController : MonoBehaviour
 {
     [Header("Movement")]
-    public float WalkSpeed   = 5f;
-    public float RunSpeed    = 10f;
-    public float JumpHeight  = 1.4f;   // metres
-    public float Gravity     = -22f;
+    public float WalkSpeed   = 12f;
+    public float RunSpeed    = 24f;
+    public float JumpHeight  = 2.5f;   // metres
+    public float Gravity     = -28f;
 
     [Header("References")]
     public Transform CamRig; // set by GameManager
@@ -29,15 +30,33 @@ public class PlayerController : MonoBehaviour
         _cc = GetComponent<CharacterController>();
     }
 
+    private bool IsGroundedCustom()
+    {
+        if (_cc.isGrounded) return true;
+
+        // Perform a short spherecast downward from the bottom of the CharacterController capsule
+        float radius = _cc.radius * 0.9f;
+        // Start origin slightly above the bottom of the capsule (0.1m up)
+        Vector3 origin = transform.position + Vector3.up * radius;
+        float castDistance = 0.25f; // check slightly below feet
+
+        if (Physics.SphereCast(origin, radius, Vector3.down, out RaycastHit hit, castDistance))
+        {
+            // If we hit any solid collider (not trigger), we are grounded
+            if (!hit.collider.isTrigger)
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
     void Update()
     {
-        var kb = Keyboard.current;
-        if (kb == null) return;
-
-        bool grounded = _cc.isGrounded;
+        bool grounded = IsGroundedCustom();
         if (grounded && _velocity.y < 0f) _velocity.y = -2f;
 
-        // When movement is frozen (mini-games), only apply gravity
+        // When movement is frozen, only apply gravity
         if (!_movementEnabled)
         {
             _velocity.y += Gravity * Time.deltaTime;
@@ -45,21 +64,49 @@ public class PlayerController : MonoBehaviour
             return;
         }
 
+        // ── Directional input (New Input System with legacy fallback) ────
+        float h = 0f, v = 0f;
+        bool sprint = false;
+        bool jump   = false;
 
+        var kb = Keyboard.current;
+        if (kb != null)
+        {
+            h = (kb.dKey.isPressed ? 1f : 0f) - (kb.aKey.isPressed ? 1f : 0f);
+            v = (kb.wKey.isPressed ? 1f : 0f) - (kb.sKey.isPressed ? 1f : 0f);
+            sprint = kb.leftShiftKey.isPressed;
+            jump   = kb.spaceKey.wasPressedThisFrame;
 
-        // ── Directional input ──────────────────────────────────────────────
-        float h = (kb.dKey.isPressed ? 1f : 0f) - (kb.aKey.isPressed ? 1f : 0f);
-        float v = (kb.wKey.isPressed ? 1f : 0f) - (kb.sKey.isPressed ? 1f : 0f);
+            // Also support arrow keys
+            if (h == 0f) h = (kb.rightArrowKey.isPressed ? 1f : 0f) - (kb.leftArrowKey.isPressed ? 1f : 0f);
+            if (v == 0f) v = (kb.upArrowKey.isPressed ? 1f : 0f) - (kb.downArrowKey.isPressed ? 1f : 0f);
+        }
+        else
+        {
+            // Legacy Input fallback (works if New Input System is missing or unfocused)
+            h = Input.GetAxisRaw("Horizontal");
+            v = Input.GetAxisRaw("Vertical");
+            sprint = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
+            jump = Input.GetKeyDown(KeyCode.Space);
+        }
+
+        // ── Teleport key (T) to cycle spawn locations ────────────────────
+        if ((kb != null && kb.tKey.wasPressedThisFrame) || Input.GetKeyDown(KeyCode.T))
+        {
+            if (GameManager.Instance != null)
+            {
+                GameManager.Instance.TeleportToNextSpawn();
+            }
+        }
 
         Vector3 fwd = CamRig != null ? Flat(CamRig.forward) : Flat(transform.forward);
         Vector3 rgt = CamRig != null ? Flat(CamRig.right)   : Flat(transform.right);
 
-        bool sprinting = kb.leftShiftKey.isPressed;
-        float speed    = sprinting ? RunSpeed : WalkSpeed;
+        float speed    = sprint ? RunSpeed : WalkSpeed;
         Vector3 move   = (fwd * v + rgt * h).normalized * speed;
 
         // ── Jump ──────────────────────────────────────────────────────────
-        if (kb.spaceKey.wasPressedThisFrame && grounded)
+        if (jump && grounded)
             _velocity.y = Mathf.Sqrt(JumpHeight * -2f * Gravity);
 
         // ── Gravity ───────────────────────────────────────────────────────
@@ -73,6 +120,14 @@ public class PlayerController : MonoBehaviour
             e.y = CamRig.eulerAngles.y;
             transform.eulerAngles = e;
         }
+    }
+
+    public void Teleport(Vector3 position)
+    {
+        if (_cc != null) _cc.enabled = false;
+        transform.position = position;
+        if (_cc != null) _cc.enabled = true;
+        _velocity = Vector3.zero;
     }
 
     static Vector3 Flat(Vector3 v) { v.y = 0f; return v.normalized; }

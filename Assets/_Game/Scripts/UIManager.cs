@@ -2,12 +2,13 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 
 /// <summary>
-/// Simple HUD elements for 3D City exploration drawn with OnGUI.
-/// Shows: movement controls, camera mode, and camera settings panel.
+/// Simple HUD elements for 3D City exploration.
+/// Spawns a circular UI Canvas-based minimap dynamically (no square corners on screen).
+/// Draws the camera mode toggle and Esc settings menu with OnGUI.
 /// </summary>
 public class UIManager : MonoBehaviour
 {
-    // ─── Styles ───────────────────────────────────────────────────────────────
+    // ─── OnGUI Styles ────────────────────────────────────────────────────────
     private GUIStyle _boxStyle;
     private GUIStyle _titleStyle;
     private GUIStyle _bodyStyle;
@@ -17,6 +18,51 @@ public class UIManager : MonoBehaviour
     // Colors
     private Color _panelBg   = new Color(0.05f, 0.10f, 0.18f, 0.85f);
     private Color _camBg     = new Color(0f, 0f, 0f, 0.55f);
+
+    // ─── Minimap Canvas Elements ──────────────────────────────────────────────
+    private GameObject _minimapCanvasInstance;
+    private RectTransform _northTextRT;
+    private Sprite _circleSprite;
+
+    Sprite GetOrCreateCircleSprite()
+    {
+        if (_circleSprite != null) return _circleSprite;
+
+        int size = 256;
+        var tex = new Texture2D(size, size, TextureFormat.RGBA32, false);
+        var pixels = new Color[size * size];
+        float center = size * 0.5f;
+        float radius = size * 0.5f;
+        
+        for (int y = 0; y < size; y++)
+        {
+            for (int x = 0; x < size; x++)
+            {
+                float dx = x - center;
+                float dy = y - center;
+                float dist = Mathf.Sqrt(dx * dx + dy * dy);
+                
+                if (dist <= radius)
+                {
+                    pixels[y * size + x] = Color.white;
+                }
+                else
+                {
+                    pixels[y * size + x] = Color.clear;
+                }
+            }
+        }
+        tex.SetPixels(pixels);
+        tex.Apply();
+        
+        _circleSprite = Sprite.Create(tex, new Rect(0f, 0f, size, size), new Vector2(0.5f, 0.5f));
+        return _circleSprite;
+    }
+
+    void Start()
+    {
+        CreateMinimapUI();
+    }
 
     void InitStyles()
     {
@@ -54,7 +100,7 @@ public class UIManager : MonoBehaviour
     private float _ui_smooth = 0.03f;
     private float _ui_fov = 65f;
 
-    // Suggested presets
+    // Presets
     private readonly (float x, float y) PresetLow = (0.15f, 0.15f);
     private readonly (float x, float y) PresetMedium = (0.35f, 0.35f);
     private readonly (float x, float y) PresetHigh = (0.75f, 0.75f);
@@ -65,6 +111,21 @@ public class UIManager : MonoBehaviour
         if (kb != null && (kb.escapeKey.wasPressedThisFrame || kb.f1Key.wasPressedThisFrame))
         {
             ToggleCameraSettings();
+        }
+
+        // Dynamically rotate North "N" indicator around circular minimap edge
+        var gm = GameManager.Instance;
+        if (gm != null && gm.Player != null && _northTextRT != null)
+        {
+            float mSize = 160f;
+            float radius = mSize * 0.5f - 14f; // slightly inside border
+            
+            // In screen coordinates, North rotates counter-clockwise as player yaw increases
+            float angleRad = -gm.Player.transform.eulerAngles.y * Mathf.Deg2Rad;
+            float nx = Mathf.Sin(angleRad) * radius;
+            float ny = -Mathf.Cos(angleRad) * radius; // invert Y since UI Y is down
+            
+            _northTextRT.anchoredPosition = new Vector2(nx, ny);
         }
     }
 
@@ -102,6 +163,94 @@ public class UIManager : MonoBehaviour
                 Cursor.visible = false;
             }
         }
+    }
+
+    void CreateMinimapUI()
+    {
+        var gm = GameManager.Instance;
+        if (gm == null || gm.MinimapTexture == null) return;
+
+        Sprite circleSprite = GetOrCreateCircleSprite();
+
+        // 1. Create Canvas
+        _minimapCanvasInstance = new GameObject("MinimapCanvas");
+        var canvas = _minimapCanvasInstance.AddComponent<Canvas>();
+        canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+        _minimapCanvasInstance.AddComponent<UnityEngine.UI.CanvasScaler>();
+        _minimapCanvasInstance.AddComponent<UnityEngine.UI.GraphicRaycaster>();
+
+        // 2. Circle Border (Back Layer)
+        var borderGO = new GameObject("MinimapBorder");
+        borderGO.transform.SetParent(_minimapCanvasInstance.transform, false);
+        var borderImg = borderGO.AddComponent<UnityEngine.UI.Image>();
+        borderImg.sprite = circleSprite;
+        borderImg.color = new Color(0.25f, 0.65f, 0.95f, 1f); // Glowing cyan circle outline
+        
+        var borderRT = borderGO.GetComponent<RectTransform>();
+        borderRT.anchorMin = new Vector2(0f, 1f);
+        borderRT.anchorMax = new Vector2(0f, 1f);
+        borderRT.pivot = new Vector2(0f, 1f);
+        borderRT.anchoredPosition = new Vector2(14f, -14f); // outline position
+        borderRT.sizeDelta = new Vector2(164f, 164f);
+
+        // 3. Circle Mask
+        var maskGO = new GameObject("MinimapMask");
+        maskGO.transform.SetParent(_minimapCanvasInstance.transform, false);
+        var maskImg = maskGO.AddComponent<UnityEngine.UI.Image>();
+        maskImg.sprite = circleSprite;
+        
+        var mask = maskGO.AddComponent<UnityEngine.UI.Mask>();
+        mask.showMaskGraphic = false; // Mask is hidden, only clips children
+
+        var maskRT = maskGO.GetComponent<RectTransform>();
+        maskRT.anchorMin = new Vector2(0f, 1f);
+        maskRT.anchorMax = new Vector2(0f, 1f);
+        maskRT.pivot = new Vector2(0f, 1f);
+        maskRT.anchoredPosition = new Vector2(16f, -16f);
+        maskRT.sizeDelta = new Vector2(160f, 160f);
+
+        // 4. RawImage (Minimap Camera Render Texture) - masked inside circle
+        var rawGO = new GameObject("MinimapRaw");
+        rawGO.transform.SetParent(maskGO.transform, false);
+        var rawImg = rawGO.AddComponent<UnityEngine.UI.RawImage>();
+        rawImg.texture = gm.MinimapTexture;
+
+        var rawRT = rawGO.GetComponent<RectTransform>();
+        rawRT.anchorMin = Vector2.zero;
+        rawRT.anchorMax = Vector2.one;
+        rawRT.sizeDelta = Vector2.zero;
+
+        // 5. Player Pointer Dot (Center of Minimap Circle)
+        var pDotGO = new GameObject("MinimapPlayerPointer");
+        pDotGO.transform.SetParent(_minimapCanvasInstance.transform, false); // place on top
+        var pDotImg = pDotGO.AddComponent<UnityEngine.UI.Image>();
+        pDotImg.sprite = circleSprite;
+        pDotImg.color = new Color(0.25f, 0.95f, 0.60f, 1f); // Glowing bright green
+
+        var pDotRT = pDotGO.GetComponent<RectTransform>();
+        pDotRT.anchorMin = new Vector2(0f, 1f);
+        pDotRT.anchorMax = new Vector2(0f, 1f);
+        pDotRT.pivot = new Vector2(0.5f, 0.5f);
+        pDotRT.anchoredPosition = new Vector2(16f + 80f, -16f - 80f); // Center of 160x160 map
+        pDotRT.sizeDelta = new Vector2(10f, 10f);
+
+        // 6. Rotating North "N" Indicator (Floating above border)
+        var northGO = new GameObject("MinimapNorthIndicator");
+        northGO.transform.SetParent(_minimapCanvasInstance.transform, false);
+        var northText = northGO.AddComponent<UnityEngine.UI.Text>();
+        northText.text = "N";
+        // Let Unity UI automatically use the default fallback font
+        northText.fontSize = 15;
+        northText.fontStyle = FontStyle.Bold;
+        northText.color = new Color(1f, 0.2f, 0.2f, 1f); // Red
+        northText.alignment = TextAnchor.MiddleCenter;
+
+        _northTextRT = northGO.GetComponent<RectTransform>();
+        _northTextRT.anchorMin = new Vector2(0f, 1f);
+        _northTextRT.anchorMax = new Vector2(0f, 1f);
+        _northTextRT.pivot = new Vector2(0.5f, 0.5f);
+        _northTextRT.anchoredPosition = new Vector2(16f + 80f, -16f - 14f); // Top of circle
+        _northTextRT.sizeDelta = new Vector2(20f, 20f);
     }
 
     void OnGUI()
@@ -173,24 +322,13 @@ public class UIManager : MonoBehaviour
                 ToggleCameraSettings();
             }
         }
-
-        // ── Controls Guide Panel ───────────────────────────────────────────────
-        float objW = 280f;
-        float objH = 120f;
-        GUI.Box(new Rect(12, 12, objW, objH), "", _boxStyle);
-        GUI.Label(new Rect(20, 16, objW - 16, 22), "🎮  CONTROLS", _titleStyle);
-        
-        string guideText = 
-            "- Move: WASD / Arrow Keys\n" +
-            "- Sprint: Hold Left Shift\n" +
-            "- Jump: Space\n" +
-            "- Camera View [V]: FPV / TPV\n" +
-            "- Settings [Esc / F1]: Adjust Mouse Sensitivity";
-
-        GUI.Label(new Rect(20, 40, objW - 20, objH - 44), guideText, _bodyStyle);
     }
 
-    // ─── Helper ───────────────────────────────────────────────────────────────
+    void OnDestroy()
+    {
+        if (_minimapCanvasInstance != null) Destroy(_minimapCanvasInstance);
+    }
+
     Texture2D MakeTex(int w, int h, Color col)
     {
         var tex = new Texture2D(w, h);

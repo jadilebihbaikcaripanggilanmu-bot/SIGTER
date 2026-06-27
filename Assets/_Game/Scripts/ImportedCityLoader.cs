@@ -10,38 +10,67 @@ public class ImportedCityLoader : MonoBehaviour
 {
     void Awake()
     {
-        // If imported environment already present, nothing to do
-        if (GameObject.Find("Imported_DemoCity_Environment") != null)
+        GameObject city = FindCityInActiveScene();
+        if (city != null)
+        {
+            city.SetActive(true);
+            Debug.Log($"[ImportedCityLoader] Found and activated city: '{city.name}'");
             return;
+        }
 
         // Create a marker so CityBuilder will skip procedural generation
-        if (GameObject.Find("UseImportedCityMarker") == null)
+        if (FindGameObjectInActiveScene("UseImportedCityMarker") == null)
         {
             var m = new GameObject("UseImportedCityMarker");
             m.hideFlags = HideFlags.DontSaveInBuild | HideFlags.DontSaveInEditor;
         }
 
         // Remove any leftover procedural city root named "CityBuilder"
-        var cityRoot = GameObject.Find("CityBuilder");
+        var cityRoot = FindGameObjectInActiveScene("CityBuilder");
         if (cityRoot != null)
         {
-            // Destroy at runtime to ensure no geometry remains
             Destroy(cityRoot);
         }
 
         // If no Imported_DemoCity_Environment exists, at least ensure spawn markers exist
-        if (GameObject.Find("PlayerSpawn") == null)
+        if (FindGameObjectInActiveScene("PlayerSpawn") == null)
         {
             var ps = new GameObject("PlayerSpawn");
             ps.transform.position = new Vector3(0f, 1f, -2f);
             ps.hideFlags = HideFlags.DontSaveInBuild | HideFlags.DontSaveInEditor;
         }
 
-        if (GameObject.Find("TotalStationPlacement") == null)
+        if (FindGameObjectInActiveScene("TotalStationPlacement") == null)
         {
             var ts = new GameObject("TotalStationPlacement");
             ts.transform.position = new Vector3(4f, 0f, 4f);
             ts.hideFlags = HideFlags.DontSaveInBuild | HideFlags.DontSaveInEditor;
         }
+    }
+
+    private GameObject FindCityInActiveScene()
+    {
+        var roots = UnityEngine.SceneManagement.SceneManager.GetActiveScene().GetRootGameObjects();
+        foreach (var r in roots)
+        {
+            var nameLower = r.name.ToLower();
+            if (nameLower.Contains("imported_democity") || 
+                nameLower.Contains("imported_demo city") || 
+                nameLower.Contains("demo_city_by_versatile"))
+            {
+                return r;
+            }
+        }
+        return null;
+    }
+
+    private GameObject FindGameObjectInActiveScene(string name)
+    {
+        var roots = UnityEngine.SceneManagement.SceneManager.GetActiveScene().GetRootGameObjects();
+        foreach (var r in roots)
+        {
+            if (r.name == name) return r;
+        }
+        return null;
     }
 }

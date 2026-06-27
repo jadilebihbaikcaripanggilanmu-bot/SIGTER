@@ -26,6 +26,10 @@ public class Bootstrap : MonoBehaviour
         // ── GameManager (spawns player, camera, UI, survey objects) ─────────
         new GameObject("GameManager").AddComponent<GameManager>();
 
+        // ── Scene debug logger ───────────────────────────────────────────────
+        new GameObject("CityDebugHelper").AddComponent<CityDebugHelper>();
+        new GameObject("SceneColliderInspector").AddComponent<SceneColliderInspector>();
+
         // ── Lighting / atmosphere ────────────────────────────────────────────
         SetupLighting();
 

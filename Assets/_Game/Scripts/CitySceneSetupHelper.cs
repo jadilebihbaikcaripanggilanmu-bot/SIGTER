@@ -32,17 +32,15 @@ public class CitySceneSetupHelper : MonoBehaviour
         // ── Auto-load prefab if not assigned in Inspector ──────────────────
         if (CityPrefab == null)
         {
-            // Try loading from Resources folder first
             CityPrefab = Resources.Load<GameObject>("demo_city_by_versatile_studio");
 
-            // If still null, try to find any existing city object in the scene
             if (CityPrefab == null)
             {
-                var existing = GameObject.Find("demo_city_by_versatile_studio");
-                if (existing == null) existing = GameObject.Find("Imported_DemoCity_Environment");
+                var existing = FindCityInActiveScene();
                 if (existing != null)
                 {
-                    Debug.Log("[CitySceneSetupHelper] Found existing city in scene — skipping instantiation.");
+                    existing.SetActive(true);
+                    Debug.Log("[CitySceneSetupHelper] Found and activated existing city in scene — skipping instantiation.");
                     EnsureMarker();
                     AddSafetyGround();
                     FindPlayerSpawn();
@@ -57,16 +55,19 @@ public class CitySceneSetupHelper : MonoBehaviour
         }
 
         // ── Spawn city prefab if not already in scene ──────────────────────
-        if (CityPrefab != null && GameObject.Find("Imported_DemoCity_Environment") == null)
+        var existingCity = FindCityInActiveScene();
+        if (CityPrefab != null && existingCity == null)
         {
             var city = Instantiate(CityPrefab, Vector3.zero, Quaternion.identity);
             city.name = "Imported_DemoCity_Environment";
-            Debug.Log("[CitySceneSetupHelper] Spawned city prefab.");
+            city.SetActive(true);
+            Debug.Log("[CitySceneSetupHelper] Spawned and activated city prefab.");
             EnsureMarker();
         }
-        else if (GameObject.Find("Imported_DemoCity_Environment") != null)
+        else if (existingCity != null)
         {
-            Debug.Log("[CitySceneSetupHelper] City already present in scene.");
+            existingCity.SetActive(true);
+            Debug.Log("[CitySceneSetupHelper] City already present in scene. Activated it.");
             EnsureMarker();
         }
 
@@ -79,7 +80,7 @@ public class CitySceneSetupHelper : MonoBehaviour
 
     void EnsureMarker()
     {
-        if (GameObject.Find("UseImportedCityMarker") == null)
+        if (FindGameObjectInActiveScene("UseImportedCityMarker") == null)
         {
             var marker = new GameObject("UseImportedCityMarker");
             marker.hideFlags = HideFlags.DontSaveInBuild | HideFlags.DontSaveInEditor;
@@ -88,7 +89,7 @@ public class CitySceneSetupHelper : MonoBehaviour
 
     void AddSafetyGround()
     {
-        if (GameObject.Find("Safety_Ground_Collider") != null) return;
+        if (FindGameObjectInActiveScene("Safety_Ground_Collider") != null) return;
 
         var go = new GameObject("Safety_Ground_Collider");
         go.transform.position = new Vector3(0f, -2f, 0f);
@@ -105,7 +106,7 @@ public class CitySceneSetupHelper : MonoBehaviour
     void FindPlayerSpawn()
     {
         // ── Check for a PlayerSpawn marker already in the scene ────────────
-        var marker = GameObject.Find("PlayerSpawn");
+        var marker = FindGameObjectInActiveScene("PlayerSpawn");
         if (marker != null)
         {
             PlayerSpawnPosition = marker.transform.position;
@@ -147,5 +148,32 @@ public class CitySceneSetupHelper : MonoBehaviour
         PlayerSpawnPosition = new Vector3(0f, FallbackPlayerY, 0f);
         SpawnPositionReady  = true;
         Debug.LogWarning("[CitySceneSetupHelper] Raycast found no low ground — using fallback spawn.");
+    }
+
+    private GameObject FindCityInActiveScene()
+    {
+        var roots = UnityEngine.SceneManagement.SceneManager.GetActiveScene().GetRootGameObjects();
+        foreach (var r in roots)
+        {
+            var nameLower = r.name.ToLower();
+            if (nameLower.Contains("imported_democity") || 
+                nameLower.Contains("imported_demo city") || 
+                nameLower.Contains("demo_city_by_versatile") ||
+                nameLower.Contains("demo city by versatile"))
+            {
+                return r;
+            }
+        }
+        return null;
+    }
+
+    private GameObject FindGameObjectInActiveScene(string name)
+    {
+        var roots = UnityEngine.SceneManagement.SceneManager.GetActiveScene().GetRootGameObjects();
+        foreach (var r in roots)
+        {
+            if (r.name == name) return r;
+        }
+        return null;
     }
 }
