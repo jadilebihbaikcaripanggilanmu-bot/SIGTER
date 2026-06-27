@@ -59,6 +59,6 @@ City Root 'STATIC_MODELS' has 2769 MeshFilters
 Total MeshFilters: 2769
 Active Mesh GameObjects: 2769/2769
 Enabled MeshRenderers: 2769/2769
-Player Found - Position: (135.56, 4.79, -79.88)
+Player Found - Position: (136.00, 4.79, -80.00)
   CharacterController Enabled: True, Center: (0.00, 0.90, 0.00), Height: 1.8
-Main Camera Found - Position: (135.56, 5.61, -79.88), Rotation: (16.39, 284.48, 0.00), Near: 0.12, Far: 1500
+Main Camera Found - Position: (136.00, 5.61, -80.00), Rotation: (7.69, 16.66, 0.00), Near: 0.12, Far: 1500
