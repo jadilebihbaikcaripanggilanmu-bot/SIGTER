@@ -102,7 +102,5 @@ public class GameManager : MonoBehaviour
         // ── 7. Spawn UI ───────────────────────────────────────────────────────
         UI = new GameObject("UIManager").AddComponent<UIManager>();
 
-        Debug.Log($"[GameManager] Setup complete. Player={spawnPos:F2}");
     }
-}
 }
