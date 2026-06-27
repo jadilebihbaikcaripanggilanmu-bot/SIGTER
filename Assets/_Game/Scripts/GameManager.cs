@@ -193,12 +193,25 @@ public class GameManager : MonoBehaviour
 
     float FindRoadSurfaceY(Vector3 spawnXZ)
     {
-        // Simple downward raycast from high above the spawn marker to hit the built-in collider
+        // Simple downward raycast from high above the spawn marker to hit the built-in collider, ignoring safety ground
         Ray ray = new Ray(new Vector3(spawnXZ.x, 25f, spawnXZ.z), Vector3.down);
-        if (Physics.Raycast(ray, out RaycastHit hit, 50f))
+        var hits = Physics.RaycastAll(ray, 50f);
+        float highestY = -999f;
+        bool foundCity = false;
+
+        foreach (var hit in hits)
         {
-            return hit.point.y;
+            if (hit.collider != null && hit.collider.name != "Safety_Ground_Collider")
+            {
+                if (hit.point.y > highestY)
+                {
+                    highestY = hit.point.y;
+                    foundCity = true;
+                }
+            }
         }
+
+        if (foundCity) return highestY;
         return 4.84f; // Fallback to street level Y
     }
 

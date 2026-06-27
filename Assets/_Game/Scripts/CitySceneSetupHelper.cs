@@ -130,15 +130,31 @@ public class CitySceneSetupHelper : MonoBehaviour
 
         foreach (var origin in candidates)
         {
-            if (Physics.Raycast(origin, Vector3.down, out RaycastHit hit, 400f))
+            var hits = Physics.RaycastAll(origin, Vector3.down, 400f);
+            float highestY = -999f;
+            bool foundGround = false;
+
+            foreach (var hit in hits)
+            {
+                if (hit.collider != null && hit.collider.name != "Safety_Ground_Collider")
+                {
+                    if (hit.point.y > highestY)
+                    {
+                        highestY = hit.point.y;
+                        foundGround = true;
+                    }
+                }
+            }
+
+            if (foundGround)
             {
                 // Make sure we land on something that isn't a building roof
                 // (check y is below 10 to avoid rooftop spawns)
-                if (hit.point.y < 10f)
+                if (highestY < 10f)
                 {
-                    PlayerSpawnPosition = hit.point + Vector3.up * 2f;
+                    PlayerSpawnPosition = new Vector3(origin.x, highestY + 2f, origin.z);
                     SpawnPositionReady  = true;
-                    Debug.Log($"[CitySceneSetupHelper] Ground found at {hit.point} → spawn at {PlayerSpawnPosition}");
+                    Debug.Log($"[CitySceneSetupHelper] Ground found at {highestY} → spawn at {PlayerSpawnPosition}");
                     return;
                 }
             }
